@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Graficos</title>
+  <style media="screen">
+    .grafica{
+      width: 50%;
+      height: 400px;
+      background: #f2f2f2;
+      padding: 10px;
+    }
+    .grafica svg{
+      background: #cccccc;
+    }
+  </style>
+</head>
+<body>
+  <select class="" name="tipo" id="tipo">
+    <optgroup label="Grafico de Barras">
+      <option value="bar">Barras</option>
+      <option value="bar3d">Barras 3D</option>
+      <option value="stackbar3d">Barras Apiladas 3D</option>
+      <option value="groupbar3d">Barras Agrupadas 3D</option>
+    </optgroup>
+    <optgroup label="Grafico Cilindrico">
+      <option value="cylinder3d">Cilindro 3D</option>
+      <option value="stackcylinder3d">Cilindros Apilados 3D</option>
+      <option value="groupcylinder3d">Cilindros Agrupados 3D</option>
+    </optgroup>
+    <optgroup label="Graficos Circular">
+      <option value="pie">Pastel</option>
+      <option value="pie3d">Pastel 3D</option>
+    </optgroup>
+  </select>
+  <button class="" id="btn" data-for="#graf1">Generar Grafica</button>
+  <div id="graf1" class="grafica"></div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://d3js.org/d3.v4.min.js">
+</script>
+<script type="text/javascript" src="sortos.js">
+</script>
+<script type="text/javascript">
+$(function() {
+  let servdatos = [
+    {
+      axeX: 'Meta',
+      axeY: {
+        individual: 100,
+        grupo: 50
+      }
+    },
+    {
+      axeX: 'Elizabeth',
+      axeY: {
+        individual: 70,
+        grupo: 50
+      }
+    },
+    {
+      axeX: 'Inmar',
+      axeY: {
+        individual: 60,
+        grupo: 50
+      }
+    },
+    {
+      axeX: 'Janeth',
+      axeY: {
+        individual: 55,
+        grupo: 50
+      }
+    },
+    {
+      axeX: 'Ana J',
+      axeY: {
+        individual: 45,
+        grupo: 50
+      }
+    },
+    {
+      axeX: 'Miguel',
+      axeY: {
+        individual: 58,
+        grupo: 50
+      }
+    },
+
+  ]
+
+  $('#btn').data('d', servdatos)
+})
+
+  let graphObj = {}
+  $('#btn').click(function(){
+    let $this = $(this)
+    let data = $this.data('d')
+    let $container = $this.data('for')
+    let type = $('#tipo').val()
+    graphObj[`${$container}`] = new ToGraph($container, data, type)
+    graphObj[`${$container}`].createSVG()
+    // graphObj[`${$container}`].printData
+    graphObj[`${$container}`].getMaxAxesY
+  })
+</script>
+</body>
+</html>
