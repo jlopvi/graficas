@@ -40,7 +40,7 @@ let datos = [
   {
     label: 'Marina',
     color: '#3366CC',
-    value: 50
+    value: 100
   },
   {
     label: 'Gerson',
@@ -64,7 +64,7 @@ var svg = d3.select("body").append("svg").attr("width",700).attr("height",300);
 svg.append("g").attr("id","salesDonut");
 svg.append("g").attr("id","quotesDonut");
 
-Donut3D.draw("salesDonut", datos, 150, 150, 100, 50, 10, 0.8);
+Donut3D.draw("salesDonut", datos, 150, 150, 100, 50, 100, 0.5);
 Donut3D.draw("quotesDonut", datos, 450, 150, 100, 100, 0, 0);
 
 // function changeData(){

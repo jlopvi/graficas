@@ -14,7 +14,7 @@
 
     }
     .grafica svg{
-      background: #cccccc;
+      background: #366091;
     }
   </style>
 </head>
@@ -36,6 +36,19 @@
       <option value="pie3d">Pastel 3D</option>
     </optgroup>
   </select>
+  <select class="" name="colorTipo" id="colorTipo">
+      <option value="solid">Solido</option>
+      <option value="bar3d">Degradado</option>
+  </select>
+  <select class="" name="cantidad" id="cantidad">
+    <option value="0" selected disabled>Candidad Colores</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+  </select>
+  <input type="color" name="" value="#B7286A">
   <button class="" id="btn" data-for="#graf1">Generar Grafica</button>
   <div id="graf1" class="grafica"></div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -45,84 +58,141 @@
 </script>
 <script type="text/javascript">
 $(function() {
-  let servdatos = [
-    {
-      axeX: 'Meta',
-      axeY: {
-        individual: 100,
-        grupo: 90,
-        otro: 80
-      }
+  let servdatos = {
+    series : {
+      'meta': [
+        {
+          axisLabel: 'Individual',
+          axeY: 100,
+        },
+        {
+          axisLabel: 'Grupo',
+          axeY: 90,
+        },
+        {
+          axisLabel: 'Otros',
+          axeY: 40,
+        },
+      ],
+      'Elizabeth' : [
+        {
+          axisLabel: 'Individual',
+          axeY: 70,
+        },
+        {
+          axisLabel: 'Grupo',
+          axeY: 50,
+        },
+        {
+          axisLabel: 'Otros',
+          axeY: 20,
+        },
+      ],
+      'Marta' : [
+        {
+          axisLabel: 'Individual',
+          axeY: 60,
+        },
+        {
+          axisLabel: 'Grupo',
+          axeY: 80,
+        },
+        {
+          axisLabel: 'Otros',
+          axeY: 10,
+        },
+      ],
+      'Raul' : [
+        {
+          axisLabel: 'Individual',
+          axeY: 120,
+        },
+        {
+          axisLabel: 'Grupo',
+          axeY: 80,
+        },
+        {
+          axisLabel: 'Otros',
+          axeY: 10,
+        },
+      ],
+      'Rauls' : [
+        {
+          axisLabel: 'Individual',
+          axeY: 120,
+        },
+        {
+          axisLabel: 'Grupo',
+          axeY: 80,
+        },
+        {
+          axisLabel: 'Otros',
+          axeY: 10,
+        },
+      ],
+      'Raulf Oscar' : [
+        {
+          axisLabel: 'Individual',
+          axeY: 120,
+        },
+        {
+          axisLabel: 'Grupo',
+          axeY: 80,
+        },
+        {
+          axisLabel: 'Otros',
+          axeY: 10,
+        },
+      ],
+      'Mario' : [
+        {
+          axisLabel: 'Individual',
+          axeY: 30,
+        },
+        {
+          axisLabel: 'Grupo',
+          axeY: 63,
+        },
+        {
+          axisLabel: 'Otros',
+          axeY: 10,
+        },
+      ],
+      'Jairo' : [
+        {
+          axisLabel: 'Individual',
+          axeY: 125,
+        },
+        {
+          axisLabel: 'Grupo',
+          axeY: 63,
+        },
+        {
+          axisLabel: 'Otros',
+          axeY: 10,
+        },
+      ],
     },
-    {
-      axeX: 'Elizabeth',
-      axeY: {
-        individual: 70,
-        grupo: 60,
-        otro: 50
+    background: '#f3f3f3' ,
+    palette: [['#000000','#0A128C','#1D78FF','#558ED5','#FFFF00'], ['#000000','red','#1D78FF','#558ED5','#FFFF00'], ['red','#0A128C','#1D78FF','#558ED5','#FFFF00']],
+    width: 1000,
+    height: 500,
+    type: 'bar',
+    color: '#777777',
+    rotate: 80
 
-      }
-    },
-    {
-      axeX: 'Inmar',
-      axeY: {
-        individual: 40,
-        grupo: 30,
-        otro: 20
+  }
 
-      }
-    },
-    {
-      axeX: 'Janeth',
-      axeY: {
-        individual: 10,
-        grupo: 20,
-        otro: 30
 
-      }
-    },
-    {
-      axeX: 'Otro',
-      axeY: {
-        individual: 105,
-        grupo: 50,
-        otro: 60
-
-      }
-    },
-    {
-      axeX: 'Ana J',
-      axeY: {
-        individual: 70,
-        grupo: 80,
-        otro: 90
-
-      }
-    },
-    {
-      axeX: 'Miguel',
-      axeY: {
-        individual: 50,
-        grupo: 90,
-        otro: 80
-
-      }
-    },
-    {
-      axeX: 'Miguel',
-      axeY: {
-        individual: 20,
-        grupo: 90,
-        otro: 80
-
-      }
-    },
-
-  ]
 
   $('#btn').data('d', servdatos)
 })
+  $('#cantidad').change(function(){
+      let cont = $(this).val()
+      for(cont; cont > 0; cont--) {
 
+      }
+  })
   let graphObj = {}
   $('#btn').click(function(){
     let $this = $(this)

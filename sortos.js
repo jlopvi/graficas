@@ -1,23 +1,49 @@
 class ToGraph {
-  constructor(container, data, type = 'bar3d', width = null, height = null, widthAxe = 30) {
-    this.data = data
+  constructor(container, data) {
+    this.data = data.series
+
     this.acumAxesY = this.getAcumAxesY
     this.allAxesY = this.getAllAxesY
+
     this.maxAcumAxesY = this.getMaxAcumAxesY
     this.maxAllAxesY = this.getMaxAllAxesY
-    this.container = container
-    this.type = type
-    this.width = width || parseInt($(container).css('width'))
-    this.height = height || parseInt($(container).css('height'))
-    this.widthAxe = widthAxe
-    this.color = [d3.scaleOrdinal()
-                  .range(["#C0392B", "#E74C3C", "#884EA0","#6C3483", "#1F618D","#2874A6", "#148F77", "#117A65", "#1E8449", "#239B56", "#D4AC0D", "#D68910", "#CA6F1E", "#A04000"]),
-                  d3.scaleOrdinal()
-                    .range(["#148F77", "#117A65", "#1E8449", "#239B56", "#D4AC0D", "#D68910", "#CA6F1E", "#A04000"]),
-                  d3.scaleOrdinal()
-                    .range([ "#D4AC0D", "#D68910", "#CA6F1E", "#A04000", "#148F77", "#117A65", "#1E8449", "#239B56"])
-                ]
 
+    this.container = container
+    this.type = data.type || 'bar3d'
+
+    this.width =  data.width || 1000
+    this.height = data.height || 500
+
+    this.background = data.background || '#f3f3f3'
+    this.color = data.palette
+    this.fontColor = data.color
+    this.rotate = data.rotate || 90
+    this.widthAxe = this.getWidthAxe
+
+  }
+
+  get getAcumAxesY () {
+    let data = this.data
+    let acum = []
+    for(let key in data) {
+      let a = 0
+      let arr = data[key].map(d=>{
+        a += d.axeY
+      })
+      acum.push(a)
+    }
+    return acum
+
+  }
+  get getAllAxesY () {
+    let data = this.data
+    let all = []
+    for(let key in data) {
+      let arr = data[key].map(d=>{
+        all.push(d.axeY)
+      })
+    }
+    return all
   }
   get getMaxAllAxesY () {
     let axesY = this.allAxesY
@@ -27,27 +53,24 @@ class ToGraph {
     let axesY = this.acumAxesY
     return d3.max(axesY)
   }
-  get getAcumAxesY () {
+
+  get getWidthAxe () {
     let data = this.data
-    return data.map(d=>{
-      let y = 0
-      for(let key in d.axeY) {
-        y += parseInt(d.axeY[key])
-      }
-      return y
-    })
+    let dataLegth = Object.keys(this.data).length
+    let coutChart = 0
+    for(let key in data) {
+      coutChart += (data[key].length)
+    }
+
+    let widthForchart = (this.width - 60) / (coutChart + dataLegth -1)
+    // let widthForchart = parseInt(widthForLabel / d3.max(coutChart) + 1)
+
+    return widthForchart
   }
-  get getAllAxesY () {
-    let data = this.data
-    let y = []
-    let d = data.map(d=>{
-      for(let key in d.axeY) {
-        y.push(parseInt(d.axeY[key]))
-      }
-    })
-    return y
-  }
+
+
   createSVG () {
+
     let container = d3.select(this.container)
     container.selectAll('svg')
               .remove()
@@ -55,12 +78,74 @@ class ToGraph {
                 .append('svg')
                 .attr('width', this.width)
                 .attr('height', this.height)
-                .append('g')
+                .style('background-color', this.background)
+
+    svg.append('defs')
+
 
 
     this.svg = svg
     this.graphContainer = container
+
+
     this.createAxesGraph()
+
+    if(this.color[0].length > 1) {
+
+        this.addGradient()
+      }
+  }
+  shadeBlend(p,c0,c1) {
+    var n=p<0?p*-1:p,u=Math.round,w=parseInt;
+    if(c0.length>7){
+        var f=c0.split(","),t=(c1?c1:p<0?"rgb(0,0,0)":"rgb(255,255,255)").split(","),R=w(f[0].slice(4)),G=w(f[1]),B=w(f[2]);
+        return "rgb("+(u((w(t[0].slice(4))-R)*n)+R)+","+(u((w(t[1])-G)*n)+G)+","+(u((w(t[2])-B)*n)+B)+")"
+    }else{
+        var f=w(c0.slice(1),16),t=w((c1?c1:p<0?"#000000":"#FFFFFF").slice(1),16),R1=f>>16,G1=f>>8&0x00FF,B1=f&0x0000FF;
+        return "#"+(0x1000000+(u(((t>>16)-R1)*n)+R1)*0x10000+(u(((t>>8&0x00FF)-G1)*n)+G1)*0x100+(u(((t&0x0000FF)-B1)*n)+B1)).toString(16).slice(1)
+    }
+}
+  addGradient () {
+    let self = this
+    let svg =  $(this.container)[0].querySelector('svg')
+    let color = this.color
+    let rotate = this.rotate
+
+    let gradients = color.map(function(palette, i){
+      let brakePoints = 100/(palette.length-1)
+      let id = $(svg).parent().attr('id')+i
+      let stops = palette.map(function (color, i) {
+
+        return {
+          offset: `${ i == 0 ? 0 : Math.round(brakePoints * (i))}%`,
+          'stop-color': `${color}`
+       }
+      })
+
+      self.createGradient(svg,id,stops,rotate);
+    })
+
+
+  }
+  createGradient(svg,id,stops,rotate){
+    var svgNS = svg.namespaceURI;
+    var grad  = document.createElementNS(svgNS,'linearGradient');
+    grad.setAttribute('id',id);
+    grad.setAttribute('gradientTransform', `rotate(${rotate})`)
+    for (var i=0;i<stops.length;i++){
+      var attrs = stops[i];
+      var stop = document.createElementNS(svgNS,'stop');
+      for (var attr in attrs){
+        if (attrs.hasOwnProperty(attr)) stop.setAttribute(attr,attrs[attr]);
+      }
+      grad.appendChild(stop);
+    }
+
+    var defs = svg.querySelector('defs') ||
+        svg.insertBefore( document.createElementNS(svgNS,'defs'), svg.firstChild);
+
+    return defs.appendChild(grad);
+
   }
   createAxesGraph () {
     if(this.type == 'bar') {
@@ -71,6 +156,8 @@ class ToGraph {
 
     let h = parseInt(this.height)
     let w = parseInt(this.width)
+
+
     let max = (Math.round(this.maxAllAxesY / 10) * 10)
     let data = this.data
     let svg = this.svg
@@ -78,7 +165,8 @@ class ToGraph {
     let bar  = svg.selectAll('rect')
                 .data(data)
                 .enter()
-    let it = 0
+
+
     let wchart = this.widthAxe
 
     let axeY = []
@@ -94,14 +182,14 @@ class ToGraph {
                   .enter().append('line')
                   .attr('x1',30)
                   .attr('x2', w)
-                  .style('stroke', 'black')
-                  .style('stroke-width', '1')
+                  .style('stroke', self.fontColor)
+                  .style('stroke-width', '0.5')
                   .attr('y1', function(d, i){
-                    return Math.round(h - ((h -40)/self.maxAllAxesY * d) -30)
+                    return Math.round(h - ((h -60)/self.maxAllAxesY * d) -30)
                   })
                   .attr('y2', function(d, i){
 
-                    return  Math.round(h - ((h -40)/self.maxAllAxesY * d) -30)
+                    return  Math.round(h - ((h -60)/self.maxAllAxesY * d) -30)
                   })
     let axesText = svg.selectAll('text')
 
@@ -112,71 +200,98 @@ class ToGraph {
             })
             .attr('x', 25)
             .attr('y', function(d, i){
-              return Math.round(h - ((h -40)/self.maxAllAxesY * d) -25)
+              return Math.round(h - ((h -60)/self.maxAllAxesY * d) -25)
             })
-            .style('fill', 'red')
+            .style('fill', self.fontColor)
             .style('text-anchor', 'end')
-    axesText.data(data)
-            .enter().append('text')
-            .text(function(d){
-              return d.axeX;
-            })
-            .attr('x', function(d, i){
 
-              let l = Object.keys(d.axeY).length
-              return (wchart * l  + 40 ) * (i+1) - (20*i) - (wchart * l)
-            })
-            .attr('y', function(d, i){
-              return Math.round(h - 10)
-            })
-            .style('fill', 'red')
+    let wacum = 0
+    let counterLabel = 0
+    let poinacum = 0
+    for(let key in data) {
 
+      let bar  = svg.append('g')
+                  .selectAll('rect')
+                  .data(data[key])
+                  .enter()
+      axesText.data([key])
+              .enter().append('text')
+              .text(function(d){
+                return d
+              })
+              .attr('y', function() {
+                return Math.round(h - 10)
 
+              })
+              .attr('x', function (d, i) {
+                let x = (40 +  wacum+ (wchart*counterLabel))
+                return x
+              })
+              .style('fill', self.fontColor)
+              .attr('font-family','Roboto')
 
-    for(let key in bar.datum().axeY) {
-      let space = Object.keys(bar.datum().axeY).length
-      let distance = 40 + (wchart*it)
+      axesText.data(data[key])
+              .enter().append('text')
+              .text(function(d) {
+                return d.axeY
+              })
+              .attr('x', function(d, i ){
+                let x = 40 +  poinacum+ (wchart*counterLabel) + (wchart/2)
+                poinacum += wchart
+
+                return x
+              })
+              .attr('y', function(d,i){
+                return h  - 35
+              })
+              .style('text-anchor', 'middle')
+              .style('fill', self.fontColor)
+              .attr('font-family','Roboto')
+              .transition()
+              .delay(function(d, i){return i*50 })
+              .duration(500)
+              .attr('y', function(d,i){
+                return h - ((h-60)/self.maxAllAxesY * d.axeY ) - 35
+              })
+
 
       bar.append('rect')
-        // .attr('x', 0)
-        .attr('y', 0)
-        .attr('width',wchart)
-        // .attr('height', 100)
-        .attr('x', function(d, i) {
-          return i * wchart * space + distance + (40/2*i)
-        })
-        .attr('height', function(d){
-          // return (h-40)/self.maxAxesY * d.axeY[key]
-          return 0
-        })
-        .attr('y', function(d){
-          return h - 30
-        })
-        .style('fill', function(d) {
+          .attr('width', wchart)
+          .attr('height', function(d){
+            return 0
+          })
+          .attr('x', function(d, i){
+            let x = 40 +  wacum+ (wchart*counterLabel)
+            wacum += wchart
+            return x
+          })
+          .attr('y', function (d, i) {
+            return h - 30
+          })
+          .style('fill', function(d, i) {
+            if(self.color[0].length == 1) {
+              return self.color[i]
+            } else {
+              let mysvg = $(self.container).children('svg')
+              let myCont = mysvg.parent().attr('id')
+              let url = `url(#${myCont}${i})`
 
-          return self.color[it](d.axeY)
-        })
-        .transition()
-        .delay(function(d, i){return i*50})
-        .duration(500)
-        .attr('height', function(d){
-          return Math.round((h -40)/self.maxAllAxesY * d.axeY[key])
-        })
-        .attr('y', function(d){
-          return Math.round(h - ((h -40)/self.maxAllAxesY * d.axeY[key]) -30)
-        })
-        .style('stroke', function(d) {
+              return url
+            }
+          })
+          .transition()
+          .delay(function(d, i){return i*50 })
+          .duration(500)
+          .attr('height', function(d){
+            return (h-60)/self.maxAllAxesY * d.axeY
+          })
+          .attr('y', function(d){
+            return h - ((h-60)/self.maxAllAxesY * d.axeY ) - 30
+          })
 
-          return self.color[it](d.axeY)
-        })
-        .style('stroke-width', '1')
-        console.log(it)
-        it++
+      counterLabel++
 
     }
-
-
-
   }
   get printData () {
     console.log(this.data)
