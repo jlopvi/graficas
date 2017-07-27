@@ -8,9 +8,14 @@
   <style media="screen">
     .grafica{
       width: 100%;
-      height: 400px;
       background: #10253f;
       padding: 10px;
+
+    }
+    .grafica table th,
+    .grafica table td{
+      border: 1px solid #f3f3f3;
+      color: #f3f3f3;
 
     }
     .grafica svg{
@@ -51,6 +56,7 @@
   <input type="color" name="" value="#B7286A">
   <button class="" id="btn" data-for="#graf1">Generar Grafica</button>
   <div id="graf1" class="grafica"></div>
+  <div style="width: 50px; height:300px; background: red"></div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script type="text/javascript" src="https://d3js.org/d3.v4.min.js">
 </script>
@@ -172,14 +178,31 @@ $(function() {
           axeY: 10,
         },
       ],
+      'Otro usuario' : [
+        {
+          axisLabel: 'Individual',
+          axeY: 20,
+        },
+        {
+          axisLabel: 'Grupo',
+          axeY: 63,
+        },
+        {
+          axisLabel: 'Otros',
+          axeY: 10,
+        },
+      ],
     },
     background: '#f3f3f3' ,
-    palette: [['#000000','#0A128C','#1D78FF','#558ED5','#FFFF00'], ['#000000','red','#1D78FF','#558ED5','#FFFF00'], ['red','#0A128C','#1D78FF','#558ED5','#FFFF00']],
-    width: 1000,
+    palette: [['#000000','#0A128C','#1D78FF','#558ED5', '#FFFF00']],
+    width: 800,
     height: 500,
-    type: 'bar',
-    color: '#777777',
-    rotate: 80
+    type: '3dstackedbar',
+    color: '#333333',
+    rotate: 195,
+    simbol: '',
+    widthAxe: 30,
+
 
   }
 
@@ -201,6 +224,7 @@ $(function() {
     let type = $('#tipo').val()
     graphObj[`${$container}`] = new ToGraph($container, data, type)
     graphObj[`${$container}`].createSVG()
+    graphObj[`${$container}`].createTable()
     // graphObj[`${$container}`].printData
     graphObj[`${$container}`].getMaxAxesY
   })
