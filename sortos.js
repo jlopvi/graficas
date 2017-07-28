@@ -97,7 +97,7 @@ class ToGraph {
     let data = this.data
     let dataLegth = Object.keys(this.data).length
     let coutChart = 0
-    
+
     for(let key in data) {
       coutChart += (data[key].length)
     }
@@ -280,6 +280,539 @@ class ToGraph {
       this.create3dBars()
     } else if(this.type == '3dstackedbar') {
       this.create3dStackedBars()
+    } else if(this.type == 'cylinder') {
+      this.createCylinder()
+    } else if(this.type == 'stackedcylinder') {
+      this.createStackedCylinder()
+    }
+  }
+  createCylinder () {
+
+    let h = parseInt(this.height)
+    let w = parseInt(this.width)
+
+
+    let max = (Math.round(this.maxAllAxesY / 10) * 10)
+    let data = this.data
+    let svg = this.svg
+    let self = this
+    let bar  = svg.selectAll('rect')
+                .data(data)
+                .enter()
+
+
+    let wchart = this.widthAxe
+
+    let axeY = []
+    for (let i = 0; i <= max; i++) {
+      if(i%10 == 0 ) {
+
+        axeY.push(i)
+      }
+    }
+
+    let axes = svg.selectAll('line')
+                  .data(axeY)
+                  .enter().append('line')
+                  .attr('x1',30)
+                  .attr('x2', w)
+                  .style('stroke', self.fontColor)
+                  .style('stroke-width', '0.15')
+                  .attr('y1', function(d, i){
+                    return Math.round(h - ((h -60)/self.maxAllAxesY * d) -30) - (wchart/2)
+                  })
+                  .attr('y2', function(d, i){
+
+                    return  Math.round(h - ((h -60)/self.maxAllAxesY * d) -30) - (wchart/2)
+                  })
+    let axesText = svg.selectAll('text')
+
+    axesText.data(axeY)
+            .enter().append('text')
+            .text(function(d){
+              return d;
+            })
+            .attr('x', 25)
+            .attr('y', function(d, i){
+              return Math.round(h - ((h -60)/self.maxAllAxesY * d) -25) - (wchart/2)
+            })
+            .style('fill', self.fontColor)
+            .style('text-anchor', 'end')
+
+    let wacum = 0
+    let counterLabel = 0
+    let poinacum = 0
+    let wacumt = 0
+    let wacumb = 0
+    for(let key in data) {
+
+      let bar  = svg.append('g')
+                  .selectAll('rect')
+                  .data(data[key])
+                  .enter()
+      axesText.data([key])
+              .enter().append('text')
+              .text(function(d){
+                return d
+              })
+              .attr('y', function() {
+                return Math.round(h - 10)
+
+              })
+              .attr('x', function (d, i) {
+                let x = (40 +  wacum+ (wchart*counterLabel))
+                return x
+              })
+              .style('fill', self.fontColor)
+              .attr('font-family','Roboto')
+
+      axesText.data(data[key])
+              .enter().append('text')
+              .text(function(d) {
+                return d.axeY
+              })
+              .attr('x', function(d, i ){
+                let x = 40 +  poinacum+ (wchart*counterLabel) + (wchart/2)
+                poinacum += wchart
+
+                return x
+              })
+              .attr('y', function(d,i){
+                return 0
+              })
+              .style('text-anchor', 'middle')
+              .style('fill', function(d,i) {
+                if(self.color[i]) {
+                  return self.modColor(-0.5,self.color[i][0])
+                } else {
+                  return self.modColor(-0.5,self.color[0][0])
+                }
+              })
+              .style('font-weight', 'bold')
+              .style('fill-opacity', 0)
+              .attr('font-family','Roboto')
+              .transition()
+              .delay(function(d, i){return i*300 })
+              .duration(500)
+              .style('fill-opacity', 1)
+              .attr('y', function(d,i){
+                return h - ((h-60)/self.maxAllAxesY * d.axeY ) - 35
+              })
+
+
+
+
+
+
+      bar.append('rect')
+          .attr('width', wchart)
+          .attr('x', function(d, i){
+            let x = 40 +  wacum+ (wchart*counterLabel)
+            wacum += wchart
+            return x
+          })
+          .style('fill', function(d, i) {
+            if(self.color[i] && self.color[i].length == 1) {
+              return self.color[i]
+            } else {
+              let mysvg = $(self.container).children('svg')
+              let myCont = mysvg.parent().attr('id')
+              if($('#'+myCont+i)[0]) {
+                let url = `url(#${myCont}${i})`
+                return url
+              } else if(self.color[0].length == 1) {
+                return self.color[0]
+              }
+              return `url(#${myCont}0)`
+
+            }
+          })
+          .attr('height', function(d){
+            return (h-60)/self.maxAllAxesY * d.axeY
+          })
+          .attr('y', function(d){
+            return h - ((h-60)/self.maxAllAxesY * d.axeY ) - 30
+          })
+          .style('fill-opacity', 0)
+          .transition()
+          .delay(function(d, i){return i*50 })
+          .duration(500)
+          .style('fill-opacity', 1)
+
+      // top
+      bar.append('circle')
+          .attr('r', wchart/2)
+
+          .attr('cx', function(d, i){
+            let x = 40 +  wacumt + (wchart*counterLabel) + wchart/2
+            wacumt += wchart
+            return x
+          })
+          .style('transform-origin','center')
+          .attr('cy', function(d){
+            return h - ((h-60)/self.maxAllAxesY * d.axeY ) - 30  + 0.5
+          })
+          .style('transform','rotateX(60deg)')
+          .style('fill', function(d, i) {
+            if(self.color[i] && self.color[i].length == 1) {
+              return self.modColor(0.2,self.color[i][0])
+            } else {
+              let mysvg = $(self.container).children('svg')
+              let myCont = mysvg.parent().attr('id')
+              if($('#'+myCont+i)[0]) {
+                let url = `url(#${myCont}${i}top)`
+                return url
+              } else if(self.color[0].length == 1) {
+                return self.modColor(0.5,self.color[0][0])
+              }
+              return `url(#${myCont}0top)`
+
+            }
+          })
+          .style('fill-opacity', 0)
+          .transition()
+          .delay(function(d, i){return i*50 })
+          .duration(500)
+          .style('fill-opacity', 1)
+      // Bottom
+
+      bar.append('circle')
+          .attr('r', wchart/2)
+
+          .attr('cx', function(d, i){
+            let x = 40 +  wacumb + (wchart*counterLabel) + wchart/2
+            wacumb += wchart
+            return x
+          })
+          .style('transform-origin','center')
+          .attr('cy', function(d){
+            return h - 60 + 30
+          })
+          .style('transform','rotateX(120deg)')
+          .style('fill', function(d, i) {
+            if(self.color[i] && self.color[i].length == 1) {
+              return self.color[i][0]
+            } else {
+              let mysvg = $(self.container).children('svg')
+              let myCont = mysvg.parent().attr('id')
+              if($('#'+myCont+i)[0]) {
+                let url = `url(#${myCont}${i})`
+                return url
+              } else if(self.color[0].length == 1) {
+                return self.modColor(0.5,self.color[0][0])
+              }
+              return `url(#${myCont}0top)`
+            }
+          })
+          .style('fill-opacity', 0)
+          .transition()
+          .delay(function(d, i){return i*50 })
+          .duration(500)
+          .style('fill-opacity', 1)
+
+
+
+
+
+
+
+      counterLabel++
+
+
+    }
+  }
+  createStackedCylinder () {
+
+    let h = parseInt(this.height)
+    let w = parseInt(this.width)
+    let max = (Math.round(this.maxAcumAxesY / 10) * 10)
+    let data = this.data
+    let svg = this.svg
+    let self = this
+    let bar  = svg.selectAll('rect')
+                .data(data)
+                .enter()
+    let wchart = this.widthStackedAxe
+    let axeY = []
+    for (let i = 0; i <= max; i++) {
+      if(i%10 == 0 ) {
+
+        axeY.push(i)
+      }
+    }
+
+    let axes = svg.selectAll('line')
+                  .data(axeY)
+                  .enter().append('line')
+                  .attr('x1',30)
+                  .attr('x2', w)
+                  .style('stroke', self.fontColor)
+                  .style('stroke-width', '0.5')
+                  .attr('y1', function(d, i){
+                    return Math.round(h - ((h -60)/self.maxAcumAxesY * d) -30  -(wchart/4))
+                  })
+                  .attr('y2', function(d, i){
+
+                    return  Math.round(h - ((h -60)/self.maxAcumAxesY * d) -30 -(wchart/4))
+                  })
+    let axesText = svg.selectAll('text')
+
+    axesText.data(axeY)
+            .enter().append('text')
+            .text(function(d){
+              return d;
+            })
+            .attr('x', 25)
+            .attr('y', function(d, i){
+              return Math.round(h - ((h -60)/self.maxAcumAxesY * d) -25  -(wchart/4))
+            })
+            .style('fill', self.fontColor)
+            .style('text-anchor', 'end')
+
+    let wacum = 0
+    let counterLabel = 0
+    let poinacum = 0
+    let posY = 0
+    let posYr = 0
+    let posYText = 0
+    let posYt = 0
+    for(let key in data) {
+
+      let bar  = svg.append('g')
+                  .selectAll('rect')
+                  .data(data[key])
+                  .enter()
+      axesText.data([key])
+              .enter().append('text')
+              .text(function(d){
+                return d
+              })
+              .attr('y', function() {
+                return Math.round(h - 10)
+
+              })
+              .attr('x', function (d, i) {
+                let x = (40 +  wacum+ (wchart*counterLabel))
+                return x
+              })
+              .style('fill', self.fontColor)
+              .attr('font-family','Roboto')
+
+      axesText.data(data[key])
+              .enter().append('text')
+              .text(function(d) {
+                return d.axeY
+              })
+              .attr('x', function(d, i ){
+                let x = 40 + wacum +(wchart*counterLabel) + (wchart/2)
+
+                return x
+              })
+              .attr('y', function(d,i){
+                let y = ((h-60)/self.maxAcumAxesY * d.axeY )
+                let oldPosY = posYText
+                posYText += y
+                return h - y + (y/2) -25 - oldPosY
+              })
+              .style('text-anchor', 'middle')
+              .style('fill', function(d,i) {
+                if(self.color[i]) {
+                  return self.modColor(0.8,self.color[i][0])
+                } else {
+                  return self.modColor(0.8,self.color[0][0])
+                }
+              })
+              .style('font-weight','bold')
+              .style('fill-opacity', 0)
+              .attr('font-family','Roboto')
+              .transition()
+              .delay(400)
+              .duration(500)
+              .style('fill-opacity', 1)
+
+
+
+
+
+      bar.append('rect')
+          .attr('width', wchart)
+          .attr('height', function(d){
+            return 0
+          })
+          .attr('x', function(d, i){
+            let x = 40 + (wchart*counterLabel) + (wchart*counterLabel)
+
+            return x
+          })
+
+          .style('fill', function(d, i) {
+            if(self.color[i] && self.color[i].length == 1) {
+              return self.color[i][0]
+            } else {
+              let mysvg = $(self.container).children('svg')
+              let myCont = mysvg.parent().attr('id')
+              if($('#'+myCont+i)[0]) {
+                let url = `url(#${myCont}${i})`
+                return url
+              } else if(self.color[0].length == 1) {
+                return self.color[0][0]
+              }
+              return `url(#${myCont}0)`
+
+            }
+          })
+          .attr('height', function(d){
+            let y = (h-60)/self.maxAcumAxesY * d.axeY
+
+            return y
+          })
+          .attr('y', function(d, i){
+            let y = (h-60)/self.maxAcumAxesY * d.axeY
+            let oldPosY = posY
+            posY += y
+            return h - ((h-60)/self.maxAcumAxesY * d.axeY ) - 30 - oldPosY
+          })
+          .style('fill-opacity', 0)
+          .transition()
+          .delay(function(d, i){return 0 })
+          .duration(500)
+          .style('fill-opacity', 1)
+
+      // Arriba 3dstackedbar
+      bar.append('circle')
+          .attr('r', wchart/2)
+
+          .attr('cx', function(d, i){
+            let x = 40 + (wchart*counterLabel) + (wchart*counterLabel) +  wchart/2
+
+            return x
+          })
+
+          .style('transform-origin','center')
+          .style('transform',function(d,i){
+            let ba = bar.data().length - 1
+
+            if(i == ba) {
+              return 'rotateX(60deg)'
+            } else {
+              return 'rotateX(120deg)'
+            }
+
+
+          })
+          .attr('cy', function(d, i){
+            let y = (h-60)/self.maxAcumAxesY * d.axeY
+            let oldPosY = posYt
+            posYt += y
+            return h - ((h-60)/self.maxAcumAxesY * d.axeY ) - 30 - oldPosY  + 0.5
+          })
+          .style('fill', function(d, i) {
+            let da = data
+            let ba = bar.data().length - 1
+            if(i == ba ) {
+              if(self.color[i] && self.color[i].length == 1) {
+                return self.modColor(0.5,self.color[i][0])
+              } else {
+                let mysvg = $(self.container).children('svg')
+                let myCont = mysvg.parent().attr('id')
+                if($('#'+myCont+i)[0]) {
+                  let url = `url(#${myCont}${i}top)`
+                  return url
+                } else if(self.color[0].length == 1) {
+                  return self.modColor(0.5,self.color[0][0])
+                }
+                return `url(#${myCont}0)`
+
+              }
+            } else {
+              if(self.color[i+1] && self.color[i+1].length == 1) {
+                return self.color[i+1][0]
+              } else {
+                let mysvg = $(self.container).children('svg')
+                let myCont = mysvg.parent().attr('id')
+                if($('#'+myCont+(i+1))[0]) {
+                  let url = `url(#${myCont}${i+1})`
+                  return url
+                } else if(self.color[0].length == 1) {
+                  return self.modColor(0.5,self.color[0][0])
+                }
+
+                return `url(#${myCont}0)`
+              }
+            }
+
+
+          })
+          .style('fill-opacity', 0)
+          .transition()
+          .delay(function(d, i){return 5 })
+          .duration(500)
+          .style('fill-opacity', 1)
+
+      bar.append('circle')
+          .attr('r', wchart/2)
+
+          .attr('cx', function(d, i){
+            let x = 40 + (wchart*counterLabel) + (wchart*counterLabel) +  wchart/2
+            return x
+          })
+          .style('transform-origin','center')
+          .style('transform',function(d,i){
+            let ba = bar.data().length - 1
+
+            if(i == ba) {
+              return 'rotateX(60deg)'
+            } else {
+              return 'rotateX(120deg)'
+            }
+
+          })
+          .attr('cy', function(d, i){
+            let y =  h - 60 + 30
+            return y
+          })
+          .style('fill', function(d, i) {
+            let da = data
+            let ba = bar.data().length - 1
+            if(i == 0 ) {
+              if(self.color[i] && self.color[i].length == 1) {
+                return self.color[i][0]
+              } else {
+                let mysvg = $(self.container).children('svg')
+                let myCont = mysvg.parent().attr('id')
+                if($('#'+myCont+i)[0]) {
+                  let url = `url(#${myCont}${i})`
+                  return url
+                } else if(self.color[0].length == 1) {
+                  return self.modColor(0.5,self.color[0][0])
+                }
+                return `url(#${myCont}0)`
+
+              }
+            } else {
+            return 'transparent'
+            }
+
+
+          })
+          .style('fill-opacity', 0)
+          .transition()
+          .delay(function(d, i){return 5 })
+          .duration(500)
+          .style('fill-opacity', 1)
+
+
+
+
+
+
+      counterLabel++
+      wacum += wchart
+      posY = 0
+      posYText = 0
+      posYr = 0
+      posYt = 0
+
     }
   }
   create3dStackedBars () {
@@ -378,9 +911,9 @@ class ToGraph {
               .style('text-anchor', 'middle')
               .style('fill', function(d,i) {
                 if(self.color[i]) {
-                  return self.modColor(-0.5,self.color[i][0])
+                  return self.modColor(0.8,self.color[i][0])
                 } else {
-                  return self.modColor(-0.5,self.color[0][0])
+                  return self.modColor(0.8,self.color[0][0])
                 }
               })
               .style('font-weight','bold')
@@ -450,7 +983,7 @@ class ToGraph {
           })
           .style('fill', function(d, i) {
             if(self.color[i] && self.color[i].length == 1) {
-              return self.modColor(0.2,self.color[i][0])
+              return self.modColor(-0.2,self.color[i][0])
             } else {
               let mysvg = $(self.container).children('svg')
               let myCont = mysvg.parent().attr('id')
@@ -458,7 +991,7 @@ class ToGraph {
                 let url = `url(#${myCont}${i}right)`
                 return url
               } else if(self.color[0].length == 1) {
-                return self.modColor(0.5,self.color[0][0])
+                return self.modColor(-0.5,self.color[0][0])
               }
               return `url(#${myCont}0right)`
 
@@ -502,7 +1035,7 @@ class ToGraph {
           })
           .style('fill', function(d, i) {
             if(self.color[i] && self.color[i].length == 1) {
-              return self.modColor(0.5,self.color[i][0])
+              return self.color[i][0]
             } else {
               let mysvg = $(self.container).children('svg')
               let myCont = mysvg.parent().attr('id')
@@ -510,7 +1043,7 @@ class ToGraph {
                 let url = `url(#${myCont}${i})`
                 return url
               } else if(self.color[0].length == 1) {
-                return self.modColor(0.5,self.color[0][0])
+                return self.color[0][0]
               }
               return `url(#${myCont}0)`
 
@@ -871,9 +1404,9 @@ class ToGraph {
               .style('text-anchor', 'middle')
               .style('fill', function(d,i) {
                 if(self.color[i] && self.color[i].length == 1) {
-                  return self.modColor(-0.5,self.color[i][0])
+                  return self.modColor(0.8,self.color[i][0])
                 } else {
-                  return self.modColor(-0.5,self.color[0][0])
+                  return self.modColor(0.8,self.color[0][0])
                 }
               })
               .style('fill-opacity', 0)
@@ -900,7 +1433,7 @@ class ToGraph {
           })
           .style('fill', function(d, i) {
             if(self.color[i] && self.color[i].length == 1) {
-              return self.modColor(0.5,self.color[i][0])
+              return self.color[i][0]
             } else {
               let mysvg = $(self.container).children('svg')
               let myCont = mysvg.parent().attr('id')
@@ -908,7 +1441,7 @@ class ToGraph {
                 let url = `url(#${myCont}${i})`
                 return url
               } else if(self.color[0].length == 1) {
-                return self.modColor(0.5,self.color[0][0])
+                return self.color[0][0]
               }
               return `url(#${myCont}0)`
 
