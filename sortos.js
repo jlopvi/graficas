@@ -20,7 +20,7 @@ class ToGraph {
     this.fontColor = data.color
     this.rotate = this.getGradientRotate(data.rotate)
     this.rotatetop = this.getGradientRotate(data.rotate-180)
-    debugger
+
     this.angle = data.rotate
     this.widthAxe = data.widthAxe || this.getWidthAxe
     this.widthStackedAxe = data.widthAxe || this.getWidthStackedAxe
@@ -97,11 +97,12 @@ class ToGraph {
     let data = this.data
     let dataLegth = Object.keys(this.data).length
     let coutChart = 0
+    
     for(let key in data) {
       coutChart += (data[key].length)
     }
 
-    let widthForchart = (this.width - 60) / ( dataLegth -1)
+    let widthForchart = (this.width - 60) / ( dataLegth * 2 - 1 )
     // let widthForchart = parseInt(widthForLabel / d3.max(coutChart) + 1)
 
     return widthForchart
